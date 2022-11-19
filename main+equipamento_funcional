@@ -1,0 +1,606 @@
+Algoritmo "RPG"
+Var
+
+   main : logico
+   ////////////////////////////////////////////////////////////////////////////////
+   jogador: caracter
+   jogadorhp,jogadorhpmax,jogadoratk,jogadordef,jogadorca:inteiro
+   jogadorlevel,jogadorexp, jogadorexpmax:inteiro
+   jogadoratkx,jogadordefx,jogadorhpx,jogadorcax: inteiro
+   ////////////////////////////////////////////////////////////////////////////////
+   itens: vetor[1..4] de caracter
+   status: vetor[1..4] de caracter
+   buff: vetor[1..4] de caracter
+   itensequipados:inteiro
+   equipload: inteiro
+   item:caracter
+   equipar:caracter
+   x, i, y: inteiro
+   armaexp,armaexpmax,armalevel,armaduraexp,armaduraexpmax,armaduralevel:inteiro
+   elmoexp,elmoexpmax,elmolevel,anelexp,anelexpmax,anellevel:inteiro
+
+   xequip: caracter
+   ////////////////////////////////////////////////////////////////////////////////
+   monstro:caracter
+   mobhp,mobhpmax,mobatk,mobdef,mobca,mobce,moblevel,mobexp:inteiro
+   ////////////////////////////////////////////////////////////////////////////////
+   //ud6,dd6,td6,qd6,cd6,sd6:inteiro
+   danocausado,danosofrido,acerto:inteiro
+
+
+procedimento geraritem //-----------------------------------------------------------
+inicio
+   aleatorio 1,4
+   lista "item"
+   leia(item)
+   aleatorio off
+fimprocedimento
+
+procedimento equiparitem
+inicio
+   se item <> "" entao
+      escreval("Loot >>>",item,"<<<")
+      se item = "espada" entao
+         se itens[1] = "" entao
+            itens[1] <- item
+            escreval(">>>",item,"<<< foi equipado")
+            buff[1] <- "Atk+3"
+            status[1] <- "Normal"
+            jogadoratkx <- jogadoratkx + 3
+            item <- ""
+         senao
+            escreval("Sua arma ganhou 1 ponto de experiencia")
+            armaexp <- armaexp + 1
+            item <- ""
+            se armaexp = armaexpmax entao
+               armalevel <- armalevel+1
+               armaexpmax <- 5*armalevel
+               buff[1] <- "Atk+6"
+               status[1] <- "Raro"
+               jogadoratkx <- jogadoratkx + 3
+               armaexp <- 0
+               item <- ""
+            fimse
+         fimse
+      senao
+         se item = "elmo" entao
+            se itens[2] = "" entao
+               itens[2] <- item
+               escreval(">>>",item,"<<< foi equipado")
+               buff[2] <- "Def+1"
+               status[2] <- "Normal"
+               jogadordefx <- jogadordefx + 1
+               item <- ""
+            senao
+               escreval("Seu elmo ganhou 1 ponto de experiencia")
+               elmoexp <- elmoexp + 1
+               item <- ""
+               se elmoexp = elmoexpmax entao
+                  elmolevel <- elmolevel + 1
+                  elmoexpmax <- 5*elmolevel
+                  buff[2] <- "Def+2"
+                  status[2] <- "Raro"
+                  jogadordefx <- jogadordefx + 1
+                  elmoexp <- 0
+                  item <- ""
+               fimse
+            fimse
+         senao
+            se item = "armadura" entao
+               se itens[3] = "" entao
+                  itens[3] <- item
+                  escreval(">>>",item,"<<< foi equipado")
+                  buff[3] <- "Def+2 HP+3"
+                  status[3] <- "Normal"
+                  jogadordefx <- jogadordefx + 2
+                  jogadorhpx <- jogadorhpx + 3
+                  jogadorhpmax <- jogadorhpmax + jogadorhpx
+                  item <- ""
+               senao
+                  escreval("Sua armadura ganhou 1 ponto de experiencia")
+                  armaduraexp <- armaduraexp + 1
+                  item <- ""
+                  se armaduraexp = armaduraexpmax entao
+                     armaduralevel <- armaduralevel+1
+                     armaduraexpmax <- 5*armaduralevel
+                     buff[3] <- "Def+4 HP+6"
+                     status[3] <- "Raro"
+                     jogadordefx <- jogadordefx + 2
+                     jogadorhpx <- jogadorhpx + 3
+                     jogadorhpmax <- jogadorhpmax + jogadorhpx
+                     armaduraexp <- 0
+                     item <- ""
+                  fimse
+               fimse
+            senao
+               se item = "anel" entao
+                  se itens[4] = "" entao
+                     itens[4] <- item
+                     escreval(">>>",item,"<<< foi equipado")
+                     buff[4] <- "Hit+1 Atk+1 Def+1 Hp+1"
+                     status[4] <- "Normal"
+                     jogadoratkx <- jogadoratkx + 1
+                     jogadordefx <- jogadordefx + 1
+                     jogadorhpx  <- jogadorhpx  + 1
+                     jogadorhpmax <- jogadorhpmax + jogadorhpx
+                     jogadorcax  <- jogadorcax  + 1
+                     item <- ""
+                  senao
+                     escreval("Seu Acessório ganhou 1 ponto de experiencia")
+                     anelexp <- anelexp + 1
+                     item <- ""
+                     se anelexp = anelexpmax entao
+                        anellevel <- anellevel+1
+                        anelexpmax <- 5*anellevel
+                        buff[4] <- "Hit+2 Atk+2 Def+2 Hp+2"
+                        status[4] <- "Raro"
+                        jogadoratkx <- jogadoratkx + 1
+                        jogadordefx <- jogadordefx + 1
+                        jogadorhpx  <- jogadorhpx  + 1
+                        jogadorhpmax <- jogadorhpmax + jogadorhpx
+                        jogadorcax  <- jogadorcax  + 1
+                        anelexp <- 0
+                        item <- ""
+                     fimse
+                  fimse
+               senao
+                  escreval("Sem Loot")
+               fimse
+            fimse
+         fimse
+      fimse
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento statusposluta
+inicio
+   timer 0
+   escreval("Nome        ",jogador)
+   escreval("Level       ",jogadorlevel)
+   escreva("HP Atual     ",jogadorhp)
+   escreva(" /",jogadorhpmax)
+   escreval("(",jogadorhpx," )")
+   escreva("Ataque      ",jogadoratk)
+   escreval("(",jogadoratkx," )")
+   escreva("Defesa      ",jogadordef)
+   escreval("(",jogadordefx," )")
+   escreva("Chance de acerto ",jogadorca)
+   escreval("(",jogadorcax," )")
+   escreva("EXP         ",jogadorexp)
+   escreval(" /",jogadorexpmax)
+   escreval("Itens  ")
+      se (itens[1] <> "") entao
+         escreval("Arma ->",itens[1],"(",armaexp,"/",armaexpmax,")")
+         escreval(" ")
+      senao
+         escreval(">VAZIO<")
+         escreval(" ")
+      fimse
+      se (itens[2] <> "") entao
+         escreval("Elmo ->",itens[2],"(",elmoexp,"/",elmoexpmax,")")
+         escreval(" ")
+      senao
+         escreval(">VAZIO<")
+         escreval(" ")
+      fimse
+      se  (itens[3] <> "") entao
+         escreval("Armadura ->",itens[3],"(",armaduraexp,"/",armaduraexpmax,")")
+         escreval(" ")
+      senao
+         escreval(">VAZIO<")
+         escreval(" ")
+      fimse
+      se (itens[4] <> "") entao
+         escreval("Acessório ->",itens[4],"(",anelexp,"/",anelexpmax,")")
+         escreval(" ")
+      senao
+         escreval(">VAZIO<")
+         escreval(" ")
+      fimse
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento experiencia
+inicio
+   timer 0
+   jogadorexp <- jogadorexp + mobexp
+   se (jogadorexp >= (10*jogadorlevel)) entao
+      jogadorlevel <- jogadorlevel + 1
+      jogadorexpmax <- 10*jogadorlevel
+      jogadorhpmax <- jogadorhpmax + 5
+      jogadorhp <- jogadorhpmax
+      jogadoratk <- jogadoratk + 2
+      jogadordef <- jogadordef + 2
+      jogadorca <- jogadorca + 2
+      timer 300
+      escreval("Parabens, você subiu de nível e ganhou")
+      escreval("Seu nível atual é: ",jogadorlevel)
+      escreval("Hp + 5")
+      escreval("Ataque +2")
+      escreval("Defesa +2")
+      escreval("Chance de acerto +2")
+      jogadorexp <- 0
+      timer 0
+   fimse
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento tela
+var
+   espaco:inteiro
+inicio
+   timer 0
+   escreva("Nome       ",jogador)
+   para espaco de 1 ate 3 faca
+      escreva(" ")
+   fimpara
+   escreval("Nome   ",monstro)
+   escreva("Level     ",jogadorlevel)
+   para espaco de 1 ate 9 faca
+      escreva(" ")
+   fimpara
+   escreval("Level  ",moblevel)
+   escreva("HP Atual ",jogadorhp)
+   escreva(" /",jogadorhpmax)
+   para espaco de 1 ate 3 faca
+      escreva(" ")
+   fimpara
+   escreval("HP     ",mobhp)
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento danos
+var
+   ud6,dd6,td6,qd6,cd6,sd6:inteiro
+inicio
+   timer 250
+   escreval("Jogandos os dados")
+   aleatorio on
+   aleatorio 1,6
+   escreva("")
+   leia(ud6)
+   escreva("")
+   leia(dd6)
+   escreva("")
+   leia(td6)
+   escreva("")
+   leia(qd6)
+   escreva("")
+   leia(cd6)
+   escreva("")
+   leia(sd6)
+   limpatela
+   escreval(Jogador," rolou",ud6," para ataque",dd6," para defesa",td6," para acerto")
+   escreval(monstro," rolou",qd6," para ataque",cd6," para defesa",sd6," para esquiva")
+   aleatorio off
+   timer 0
+   danocausado <- (jogadoratk + ud6 + jogadoratkx) - (mobdef + cd6)
+   danosofrido <- (mobatk + qd6) - (jogadordef + dd6 + jogadordefx)
+   acerto <- (jogadorca + td6 + jogadorcax) - (mobce + sd6)
+   se danosofrido < 0 entao
+      danosofrido <- 0
+   fimse
+   se danocausado < 0 entao
+      danocausado <- 0
+   fimse
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento dados
+var
+   ud6,dd6,td6,qd6,cd6,sd6:inteiro
+inicio
+   timer 250
+   escreval("Jogandos os dados")
+   aleatorio on
+   aleatorio 1,6
+   leia(ud6)
+   leia(dd6)
+   leia(td6)
+   leia(qd6)
+   leia(cd6)
+   leia(sd6)
+   limpatela
+   escreval(Jogador," rolou",ud6," para ataque",dd6," para defesa",td6," para acerto")
+   escreval(mob," rolou",qd6," para ataque",cd6," para defesa",sd6," para esquiva")
+   aleatorio off
+   timer 0
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento carregando
+var
+   carregando: inteiro
+inicio
+   timer 50
+   para carregando de 1 ate 4 faca
+      escreval("Carregando...",carregando*25,"%")
+      limpatela
+   fimpara
+   timer 0
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento jogador
+var
+   statusmenu:inteiro
+inicio
+   carregando
+   enquanto statusmenu <> 1 faca
+      limpatela
+      escreval("Nome        ",jogador)
+      escreval("Level       ",jogadorlevel)
+      escreva("HP Atual     ",jogadorhp)
+      escreva(" /",jogadorhpmax)
+      escreval("(",jogadorhpx," )")
+      escreva("Ataque      ",jogadoratk)
+      escreval("(",jogadoratkx," )")
+      escreva("Defesa      ",jogadordef)
+      escreval("(",jogadordefx," )")
+      escreva("Chance de acerto ",jogadorca)
+      escreval("(",jogadorcax," )")
+      escreva("EXP         ",jogadorexp)
+      escreval(" /",jogadorexpmax)
+
+      escreval("Itens  ")
+      se (itens[1] <> "") entao
+         escreval("Arma ->",itens[1],"(",armaexp,"/",armaexpmax,")")
+         escreval(" ")
+      senao
+         escreval(">VAZIO<")
+         escreval(" ")
+      fimse
+      se (itens[2] <> "") entao
+         escreval("Elmo ->",itens[2],"(",elmoexp,"/",elmoexpmax,")")
+         escreval(" ")
+      senao
+         escreval(">VAZIO<")
+         escreval(" ")
+      fimse
+      se  (itens[3] <> "") entao
+         escreval("Armadura ->",itens[3],"(",armaduraexp,"/",armaduraexpmax,")")
+         escreval(" ")
+      senao
+         escreval(">VAZIO<")
+         escreval(" ")
+      fimse
+      se (itens[4] <> "") entao
+         escreval("Acessório ->",itens[4],"(",anelexp,"/",anelexpmax,")")
+         escreval(" ")
+      senao
+         escreval(">VAZIO<")
+         escreval(" ")
+      fimse
+      escreval("1..Retornar ao menu")
+      leia(statusmenu)
+      se (statusmenu = 1) entao
+         limpatela
+         menu
+      fimse
+   fimenquanto
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento combat
+var
+   xcombat:caracter
+   ycombat:logico
+inicio
+   ycombat <- verdadeiro
+   enquanto ycombat = verdadeiro faca
+      carregando
+      tela
+      timer 300
+      escreval("Deseja lutar <S/N>")
+      leia(xcombat)
+      se (xcombat = "S") ou (xcombat = "s") entao
+         limpatela
+         carregando
+         danos
+         timer 0
+         se acerto > 0 entao
+            jogadorhp <- jogadorhp - danosofrido
+            mobhp <- mobhp - danocausado
+            timer 300
+            escreval("Sua chance de acerto é de ",acerto)
+            escreval("Você causou",danocausado," pontos de dano")
+            escreval("Você sofreu",danosofrido," pontos de dano")
+            timer 0
+         senao
+            timer 300
+            jogadorhp <- jogadorhp - danosofrido
+            escreval("Sua chance de acerto é de ",acerto)
+            escreval("Você errou o ataque")
+            escreval("Você sofreu ,",danosofrido," pontos de dano")
+            timer 0
+         fimse
+         se (mobhp <= 0) entao
+            geraritem
+            limpatela
+            timer 400
+            escreval("Parabens, você derrotou 1 ",monstro)
+            escreval("Você recebeu ",mobexp," de experiência")
+            equiparitem
+            timer 0
+            experiencia
+            statusposluta
+            escreval("")
+            escreval("<ENTER> para retornar")
+            leia(xcombat)
+            escreval("Retornando...")
+            timer 300
+            limpatela
+            timer 0
+            ycombat <- falso
+            menu
+         fimse
+         se (jogadorhp <= 0) entao
+            timer 1000
+            limpatela
+            escreval("Seu HP atual é",playerhp)
+            escreval("Você morreu!")
+            escreval("Deseja recomeçar <S/N>?")
+            timer 0
+            leia(continuar)
+            se (continuar = "S") ou (continuar = "s") entao
+               jogadorhp <- 15
+               jogadorhpmax  <- 15
+               jogadoratk  <- 1
+               jogadordef  <- 1
+               jogadorca  <- 1
+               jogadorlevel  <- 1
+               jogadorexp <- 0
+               carregando
+            senao
+               limpatela
+               escreval("Obrigado por jogar!")
+               ycombat <- falso
+               main <- falso
+            fimse
+         fimse
+      senao
+         se (xcombat <> "n") ou (xcombat <> "N") entao
+            timer 500
+            escreval("Você fugiu do combate")
+            limpatela
+            timer 0
+            main <- falso
+            ycombat <- falso
+            menu
+         fimse
+      fimse
+   fimenquanto
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento mob
+inicio
+   carregando
+   aleatorio on
+   lista "area1mobs"
+   leia(monstro)
+   aleatorio off
+   limpatela
+   timer 300
+   se monstro="slime" entao
+      limpatela
+      escreval("Você encontrou um ",monstro)
+      timer 0
+      mobhp <- 3
+      mobhpmax <- 3
+      mobatk  <- 1
+      mobdef  <- 1
+      mobce <- 1
+      moblevel  <- 1
+      mobexp <- 5
+      combat
+   senao
+      se monstro="lobo" entao
+         limpatela
+         escreval("Você encontrou um ",monstro)
+         timer 0
+         mobhp <- 3
+         mobhpmax <- 3
+         mobatk  <- 1
+         mobdef  <- 1
+         mobce <- 1
+         moblevel  <- 1
+         mobexp <- 5
+         combat
+      senao
+         se monstro="zumbi" entao
+            limpatela
+            escreval("Você encontrou um ",monstro)
+            timer 0
+            mobhp <- 3
+            mobhpmax <- 3
+            mobatk  <- 1
+            mobdef  <- 1
+            mobce <- 1
+            moblevel  <- 1
+            mobexp <- 5
+            combat
+         senao
+            se monstro="golem" entao
+               limpatela
+               escreval("Você encontrou um ",monstro)
+               timer 0
+               mobhp <- 3
+               mobhpmax <- 3
+               mobatk  <- 1
+               mobdef  <- 1
+               mobce <- 1
+               moblevel  <- 1
+               mobexp <- 5
+               combat
+            fimse
+         fimse
+      fimse
+   fimse
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+procedimento menu
+var
+   menu:inteiro
+inicio
+   main <- verdadeiro
+   carregando
+   timer 0
+   monstro <- ""
+   mobhp <- 0
+   mobhpmax <- 0
+   mobatk  <- 0
+   mobdef  <- 0
+   mobce <- 0
+   moblevel  <- 0
+   mobexp <- 0
+   limpatela
+   escreval("MENU")
+   escreval("")
+   escreval("1...Inventário")
+   escreval("2...Lutar")
+   escreval("3...Sair")
+   leia(menu)
+   escolha menu
+   caso 1
+      limpatela
+      jogador
+   caso 2
+      limpatela
+      mob
+   caso 3
+      limpatela
+      carregando
+      main <- falso
+   fimescolha
+fimprocedimento
+////////////////////////////////////////////////////////////////////////////////
+Inicio
+   jogadorhp <- 15
+   jogadorhpmax  <- 15
+   jogadoratk  <- 5
+   jogadordef  <- 5
+   jogadorca  <- 5
+   jogadorlevel  <- 1
+   jogadorexpmax <- 10*jogadorlevel
+   jogadorexp <- 0
+
+   armalevel <- 1
+   armaexpmax  <- 5 * armalevel
+   armaexp <- 0
+   armaduralevel <- 1
+   armaduraexpmax  <- 5 * armaduralevel
+   armaduraexp <- 0
+   elmolevel <-1
+   elmoexpmax  <- 5 * elmolevel
+   elmoexp <- 0
+   anellevel <- 1
+   anelexpmax  <- 5 * anellevel
+   anelexp <- 0
+   escreval("Insira seu nome")
+   leia(jogador)
+   limpatela
+   escreval("Bem vindo ",jogador)
+   timer 1000
+   limpatela
+   escreval("Indo ao MENU")
+   timer 0
+   limpatela
+   menu
+   se main = verdadeiro entao
+      repita
+         combat
+      ate (jogadorhp <= 0) ou (mobhp <= 0)
+   fimse
+Fimalgoritmo
